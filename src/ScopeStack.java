@@ -11,6 +11,7 @@ public class ScopeStack {
     private Collection<String> global; // This will ALWAYS be the base of the stack, and should be the only
     // layer on the stack other than the top which we can access individually
 
+    // TO KEEP THINGS CLEAN, I AM NOT GOING TO THROW ANY EXCEPTIONS FROM THIS CLASS
 
     public Collection<String> getGlobal() {
         return global;
@@ -46,7 +47,35 @@ public class ScopeStack {
         return popped;
     }
 
+    // Global layer interface
+    // ...
+    // ...
+    public void globalPut(String newId, SLType newType) {
+        // Put the k-v pair directly onto the id map without putting the id at the current scope layer
+        global.add(newId);
+        id.put(newId, newType);
+    }
+
+    public void globalRemove(String keyId) {
+        if (global.remove(keyId)) {
+            id.remove(keyId);
+        }
+    }
+
+    public boolean globalContains(String keyId) {
+        return global.contains(keyId);
+    }
+
+    // Simple Map implementation below
+    // ...
+    // ...
+    public SLType get(String keyId) {
+        return id.get(keyId);
+    }
+
     public void put(String newId, SLType newType) {
+        // Something to think about: what if you're overriding a variable from an outer scope?
+        // No need to worry about it for this coursework, but worth keeping in mind
         scope.peek().add(newId);
         id.put(newId, newType);
     }
@@ -54,5 +83,9 @@ public class ScopeStack {
     public void putAll(HashMap<String, SLType> newIds) {
         scope.peek().addAll(newIds.keySet());
         id.putAll(newIds);
+    }
+
+    public boolean containsKey(String keyId) {
+        return (id.containsKey(keyId));
     }
 }

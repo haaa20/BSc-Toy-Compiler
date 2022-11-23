@@ -7,3 +7,5 @@ int main() {
 doLoop(0, 5);
 print space;
 1337 }
+
+int doLoop() {4}
