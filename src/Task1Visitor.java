@@ -6,16 +6,18 @@ import java.util.HashMap;
 public class Task1Visitor extends SimpleLangBaseVisitor<SLType> {
     ScopeStack<SLType> scopeStack;
 
-    // A simple function to evaluate a TYPE node
-    private SLType typeOf(ParseTree ctx) {
-        return switch (ctx.getText()) {
-            case "int" -> SLType.INT;
-            case "bool" -> SLType.BOOL;
-            case "unit" -> SLType.UNIT;
-            default -> null;
-        };
+    private static class Evaluate {
+        // A simple function to evaluate a TYPE node
+        static SLType typeOf(ParseTree ctx) {
+            return switch (ctx.getText()) {
+                case "int" -> SLType.INT;
+                case "bool" -> SLType.BOOL;
+                case "unit" -> SLType.UNIT;
+                default -> null;
+            };
+        }
     }
-    
+
     @Override
     public SLType visit(ParseTree tree) {
         // Instancing any fields we will need to run the analysis, and traversing the tree
@@ -39,7 +41,7 @@ public class Task1Visitor extends SimpleLangBaseVisitor<SLType> {
         // The sequence (type IDFR ':=' exp ';') will always repeat n number of times, so we can iterate through
         // any one of them and access all the others
         for (int i = 0; i < ctx.IDFR().size(); i++) {
-            SLType varType = typeOf(ctx.type(i));
+            SLType varType = Evaluate.typeOf(ctx.type(i));
             String varName = ctx.IDFR(i).getText();
 
             // Checking if there is collision between a var name and the functions, or the other vars
@@ -64,6 +66,22 @@ public class Task1Visitor extends SimpleLangBaseVisitor<SLType> {
     }
 
     @Override
+    public SLType visitOperation(SimpleLangParser.OperationContext ctx) {
+        SimpleLangParser.BinopContext op = ctx.binop();
+        if (op.COMPOP() != null) {
+
+        }
+        else if (op.INTOP() != null) {
+
+        }
+        else { // if (op.BOOLOP() != null)
+
+        }
+
+        return super.visitOperation(ctx);
+    }
+
+    @Override
     public SLType visitAssignment(SimpleLangParser.AssignmentContext ctx) {
         String varName = ctx.IDFR().getText();
 
@@ -78,7 +96,7 @@ public class Task1Visitor extends SimpleLangBaseVisitor<SLType> {
 
     @Override
     public SLType visitDec(SimpleLangParser.DecContext ctx) {
-        SLType funcType = typeOf(ctx.type());
+        SLType funcType = Evaluate.typeOf(ctx.type());
         String funcId = ctx.IDFR().getText();
 
         // Error check for duplicate function

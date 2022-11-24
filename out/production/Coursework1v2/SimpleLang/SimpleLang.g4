@@ -17,7 +17,7 @@ exp
     | INTLIT    #AnInt
     | BOOLLIT   #ABool
     | IDFR ':=' exp #Assignment
-    | '(' exp BINOP exp ')' #Operation
+    | '(' exp binop exp ')' #Operation
     | IDFR '(' args ')' #FuncCall
     | block #CodeBlock
     | 'if' exp 'then' block 'else' block #Conditional
@@ -33,19 +33,25 @@ args: (exp (',' exp)*)?;
 
 type: INTTYPE| BOOLTYPE| UNITTYPE;
 
-BINOP
+binop: COMPOP| INTOP| BOOLOP;
+
+COMPOP
     : '=='
     | '<'
     | '>'
     | '<='
     | '>='
-    | '+'
+;
+INTOP
+    : '+'
     | '-'
     | '*'
     | '/'
-    | '&'
-    | '|'
     | '^'
+;
+BOOLOP
+    : '&'
+    | '|'
 ;
 INTTYPE: 'int';
 BOOLTYPE: 'bool';
