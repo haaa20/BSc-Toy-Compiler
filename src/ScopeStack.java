@@ -80,6 +80,13 @@ public class ScopeStack {
         id.put(newId, newType);
     }
 
+    public void remove(String keyId) {
+        // Only works on the top layer
+        if (scope.peek().remove(keyId)) {
+            id.remove(keyId);
+        }
+    }
+
     public void putAll(HashMap<String, SLType> newIds) {
         scope.peek().addAll(newIds.keySet());
         id.putAll(newIds);

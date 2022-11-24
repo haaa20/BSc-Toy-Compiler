@@ -1,6 +1,8 @@
 import SimpleLang.*;
 import org.antlr.v4.runtime.tree.ParseTree;
 
+import java.util.HashMap;
+
 public class Task1Visitor extends SimpleLangBaseVisitor<SLType> {
     ScopeStack scopeStack;
 
@@ -31,11 +33,55 @@ public class Task1Visitor extends SimpleLangBaseVisitor<SLType> {
     }
 
     @Override
+    public SLType visitBody(SimpleLangParser.BodyContext ctx) {
+        HashMap<String, SLType> bodyScope = new HashMap<>();
+
+        // The sequence (type IDFR ':=' exp ';') will always repeat n number of times, so we can iterate through
+        // any one of them and access all the others
+        for (int i = 0; i < ctx.IDFR().size(); i++) {
+            SLType varType = typeOf(ctx.type(i));
+            String varName = ctx.IDFR(i).getText();
+
+            // Checking if there is collision between a var name and the functions, or the other vars
+            // currently in scope
+            if (scopeStack.containsKey(varName)) {
+                if (scopeStack.globalContains(varName)) {
+                    throw new TypeException().clashedVarError();
+                }
+                else {
+                    throw new TypeException().duplicatedVarError();
+                }
+            }
+
+            // Adding the var to the scope
+            bodyScope.put(varName, varType);
+        }
+
+        scopeStack.pushScope(bodyScope);
+        SLType visit = super.visitBody(ctx);
+        scopeStack.popScope();
+        return visit;
+    }
+
+    @Override
+    public SLType visitAssignment(SimpleLangParser.AssignmentContext ctx) {
+        String varName = ctx.IDFR().getText();
+
+        // Checking to see if the varName does not exist OR if it actually refers to a function
+        // Either way - it's an error
+        if (!scopeStack.containsKey(varName) || scopeStack.globalContains(varName)) {
+            throw new TypeException().undefinedVarError();
+        }
+
+        return super.visitAssignment(ctx);
+    }
+
+    @Override
     public SLType visitDec(SimpleLangParser.DecContext ctx) {
         SLType funcType = typeOf(ctx.type());
         String funcId = ctx.IDFR().getText();
 
-        // Error checks
+        // Error check for duplicate function
         if (scopeStack.globalContains(funcId)) {
             throw new TypeException().duplicatedFuncError();
         }
