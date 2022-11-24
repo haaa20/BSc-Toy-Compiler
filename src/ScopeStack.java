@@ -2,11 +2,11 @@ import SimpleLang.SLType;
 
 import java.util.*;
 
-public class ScopeStack {
+public class ScopeStack<T> {
     // A class to keep track of which idfrs are currently in scope
     // I'll do this with a map of strings to types
     // plus a stack of lists of strings at different layers
-    private HashMap<String, SLType> id;
+    private HashMap<String, T> id;
     private Stack<Collection<String>> scope;
     private Collection<String> global; // This will ALWAYS be the base of the stack, and should be the only
     // layer on the stack other than the top which we can access individually
@@ -18,7 +18,7 @@ public class ScopeStack {
     }
 
     public ScopeStack() {
-        id = new HashMap<>();
+        id = new HashMap<String, T>();
         scope = new Stack<>();
         global = new HashSet<>();
 
@@ -26,7 +26,7 @@ public class ScopeStack {
     }
 
     // Pushes a new scope stack layer with some new values
-    public void pushScope(HashMap<String, SLType> newIds) {
+    public void pushScope(HashMap<String, T> newIds) {
         pushScope();
         putAll(newIds);
     }
@@ -50,7 +50,7 @@ public class ScopeStack {
     // Global layer interface
     // ...
     // ...
-    public void globalPut(String newId, SLType newType) {
+    public void globalPut(String newId, T newType) {
         // Put the k-v pair directly onto the id map without putting the id at the current scope layer
         global.add(newId);
         id.put(newId, newType);
@@ -69,11 +69,11 @@ public class ScopeStack {
     // Simple Map implementation below
     // ...
     // ...
-    public SLType get(String keyId) {
+    public T get(String keyId) {
         return id.get(keyId);
     }
 
-    public void put(String newId, SLType newType) {
+    public void put(String newId, T newType) {
         // Something to think about: what if you're overriding a variable from an outer scope?
         // No need to worry about it for this coursework, but worth keeping in mind
         scope.peek().add(newId);
@@ -87,7 +87,7 @@ public class ScopeStack {
         }
     }
 
-    public void putAll(HashMap<String, SLType> newIds) {
+    public void putAll(HashMap<String, T> newIds) {
         scope.peek().addAll(newIds.keySet());
         id.putAll(newIds);
     }
