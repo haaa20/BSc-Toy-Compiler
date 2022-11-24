@@ -1,11 +1,13 @@
-unit doLoop (int i, int a) {
-while (i <= 100) do {
-  a := (a + i);
-  i := (i + 1) } }
+int main(int n)
+{
 
-int main() {
-doLoop(0, 5);
-print space;
-1337 }
+    int a := 0;
+    int i := 1;
+    while (i <= n) do {
 
-int doLoop() {4}
+        a := (a + i);
+        i := (i + 1)
+    };
+    a
+
+}

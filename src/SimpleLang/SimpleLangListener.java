@@ -1,4 +1,5 @@
-package SimpleLang;// Generated from java-escape by ANTLR 4.11.1
+// Generated from java-escape by ANTLR 4.11.1
+package SimpleLang;
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 
 /**
@@ -254,4 +255,14 @@ public interface SimpleLangListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitType(SimpleLangParser.TypeContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link SimpleLangParser#binop}.
+	 * @param ctx the parse tree
+	 */
+	void enterBinop(SimpleLangParser.BinopContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SimpleLangParser#binop}.
+	 * @param ctx the parse tree
+	 */
+	void exitBinop(SimpleLangParser.BinopContext ctx);
 }

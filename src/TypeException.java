@@ -53,7 +53,7 @@ public class TypeException extends RuntimeException
         return this;
     }
 
-    // TODO
+    // DONE
     // A method to produce an exception for duplicated parameter or local variable names
     public TypeException duplicatedVarError()
     {
@@ -61,7 +61,7 @@ public class TypeException extends RuntimeException
         return this;
     }
 
-    // TODO
+    // DONE
     // A method to produce an exception for parameter or local variable names that clashes with function names
     public TypeException clashedVarError()
     {

@@ -1,4 +1,5 @@
-package SimpleLang;// Generated from java-escape by ANTLR 4.11.1
+// Generated from java-escape by ANTLR 4.11.1
+package SimpleLang;
 import org.antlr.v4.runtime.tree.ParseTreeVisitor;
 
 /**
@@ -155,4 +156,10 @@ public interface SimpleLangVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitType(SimpleLangParser.TypeContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SimpleLangParser#binop}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitBinop(SimpleLangParser.BinopContext ctx);
 }
