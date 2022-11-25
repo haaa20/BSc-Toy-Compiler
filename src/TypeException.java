@@ -69,6 +69,7 @@ public class TypeException extends RuntimeException
         return this;
     }
 
+    // DONE
     // A method to produce an exception for parameters or local variables of 'unit' type.
     public TypeException unitVarError()
     {

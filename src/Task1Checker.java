@@ -17,12 +17,22 @@ public class Task1Checker extends SimpleLangBaseVisitor<SLType> {
     }
 
     ScopeStack<SLType> scopeStack;
-    
+
+    public Task1Checker() {
+        this.scopeStack = new ScopeStack<>();
+    }
+
     @Override
-    public SLType visit(ParseTree tree) {
-        // Instancing any fields we will need to run the analysis, and traversing the tree
-        scopeStack = new ScopeStack<SLType>();
-        SLType result = super.visit(tree);
+    public SLType visitProg(SimpleLangParser.ProgContext ctx) {
+        // Iterate through every function declaration, and add them to the scope
+        // We want to do this FIRST as the order in which functions are declared should not matter
+        // to any of the blocks of code
+        for (SimpleLangParser.DecContext dec : ctx.dec()) {
+            addFunction(
+                    Evaluate.typeOf(dec.type()),
+                    dec.IDFR().getText()
+            );
+        }
 
         if (!scopeStack.getGlobal().contains("main")) {
             throw new TypeException().noMainFuncError();
@@ -31,7 +41,16 @@ public class Task1Checker extends SimpleLangBaseVisitor<SLType> {
             throw new TypeException().mainReturnTypeError();
         }
 
-        return result;
+        return super.visitProg(ctx);
+    }
+
+    @Override
+    public SLType visitFuncCall(SimpleLangParser.FuncCallContext ctx) {
+        // Checking for unknown function names
+        if (!scopeStack.globalContains(ctx.IDFR().getText())) {
+            throw new TypeException().undefinedFuncError();
+        }
+        return super.visitFuncCall(ctx);
     }
 
     @Override
@@ -88,11 +107,7 @@ public class Task1Checker extends SimpleLangBaseVisitor<SLType> {
         return super.visitType(ctx);
     }
 
-    @Override
-    public SLType visitDec(SimpleLangParser.DecContext ctx) {
-        SLType funcType = Evaluate.typeOf(ctx.type());
-        String funcId = ctx.IDFR().getText();
-
+    private void addFunction(SLType funcType, String funcId) {
         // Error check for duplicate function
         if (scopeStack.globalContains(funcId)) {
             throw new TypeException().duplicatedFuncError();
@@ -101,7 +116,5 @@ public class Task1Checker extends SimpleLangBaseVisitor<SLType> {
         // At this point it SHOULDN'T matter whether we do globalPut() or just put()
         // But I'm using globalPut() just to be safe for now
         scopeStack.globalPut(funcId, funcType);
-        return super.visitDec(ctx);
     }
-
 }
