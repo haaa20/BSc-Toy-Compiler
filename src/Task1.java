@@ -16,7 +16,7 @@ public class Task1 {
 
         // Constructing a listener and walking through the parser tree
         try {
-            Task1Visitor visitor = new Task1Visitor();
+            Task1Checker visitor = new Task1Checker();
             visitor.visit(tree);
         } catch (TypeException ex) {
             System.out.println(String.format("ERROR \n -- %s", ex.report()));

@@ -3,7 +3,7 @@ import org.antlr.v4.runtime.tree.ParseTree;
 
 import java.util.HashMap;
 
-public class Task1Visitor extends SimpleLangBaseVisitor<SLType> {
+public class Task1Checker extends SimpleLangBaseVisitor<SLType> {
     private static class Evaluate {
         // A simple function to evaluate a TYPE node
         static SLType typeOf(ParseTree ctx) {
