@@ -27,7 +27,7 @@ public class Task1Visitor extends SimpleLangBaseVisitor<SLType> {
         if (!scopeStack.getGlobal().contains("main")) {
             throw new TypeException().noMainFuncError();
         }
-        if (scopeStack.get("main") != SLType.INT) {
+        else if (scopeStack.get("main") != SLType.INT) {
             throw new TypeException().mainReturnTypeError();
         }
 
@@ -43,7 +43,6 @@ public class Task1Visitor extends SimpleLangBaseVisitor<SLType> {
         for (int i = 0; i < ctx.IDFR().size(); i++) {
             SLType varType = Evaluate.typeOf(ctx.type(i));
             String varName = ctx.IDFR(i).getText();
-
             // Checking if there is collision between a var name and the functions, or the other vars
             // currently in scope
             if (scopeStack.containsKey(varName)) {
@@ -76,6 +75,17 @@ public class Task1Visitor extends SimpleLangBaseVisitor<SLType> {
         }
 
         return super.visitAssignment(ctx);
+    }
+
+    @Override
+    public SLType visitType(SimpleLangParser.TypeContext ctx) {
+        // Check for variables of type unit, which is not allowed
+        if (!(ctx.getParent() instanceof SimpleLangParser.DecContext)
+                && Evaluate.typeOf(ctx) == SLType.UNIT) {
+            throw new TypeException().unitVarError();
+        }
+
+        return super.visitType(ctx);
     }
 
     @Override
