@@ -4,8 +4,6 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import java.util.HashMap;
 
 public class Task1Visitor extends SimpleLangBaseVisitor<SLType> {
-    ScopeStack<SLType> scopeStack;
-
     private static class Evaluate {
         // A simple function to evaluate a TYPE node
         static SLType typeOf(ParseTree ctx) {
@@ -18,6 +16,8 @@ public class Task1Visitor extends SimpleLangBaseVisitor<SLType> {
         }
     }
 
+    ScopeStack<SLType> scopeStack;
+    
     @Override
     public SLType visit(ParseTree tree) {
         // Instancing any fields we will need to run the analysis, and traversing the tree
@@ -63,22 +63,6 @@ public class Task1Visitor extends SimpleLangBaseVisitor<SLType> {
         SLType visit = super.visitBody(ctx);
         scopeStack.popScope();
         return visit;
-    }
-
-    @Override
-    public SLType visitOperation(SimpleLangParser.OperationContext ctx) {
-        SimpleLangParser.BinopContext op = ctx.binop();
-        if (op.COMPOP() != null) {
-
-        }
-        else if (op.INTOP() != null) {
-
-        }
-        else { // if (op.BOOLOP() != null)
-
-        }
-
-        return super.visitOperation(ctx);
     }
 
     @Override
