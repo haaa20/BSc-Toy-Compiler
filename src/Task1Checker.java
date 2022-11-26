@@ -54,14 +54,15 @@ public class Task1Checker extends SimpleLangBaseVisitor<SLType> {
             throw new TypeException().mainReturnTypeError();
         }
 
-        return super.visitProg(ctx);
+        visitChildren(ctx);
+        return SLType.UNIT;
     }
 
     @Override
     public SLType visitDec(SimpleLangParser.DecContext ctx) {
         // As we are entering a function, push a new layer of scope
         scopeStack.pushScope();
-        super.visitDec(ctx);
+        visitChildren(ctx);
         // Once we have finished traversing the function sub-tree, pop off the scoped variables
         scopeStack.popScope();
         return SLType.UNIT;
@@ -73,16 +74,19 @@ public class Task1Checker extends SimpleLangBaseVisitor<SLType> {
         for (int i = 0; i < ctx.IDFR().size(); i++) {
             scopeStack.put(ctx.IDFR(i).getText(), Evaluate.typeOf(ctx.type(i)));
         }
-        return super.visitVardec(ctx);
+
+        return SLType.UNIT;
     }
 
     @Override
     public SLType visitFuncCall(SimpleLangParser.FuncCallContext ctx) {
+        String funcId = ctx.IDFR().getText();
+
         // Checking for unknown function names
-        if (!scopeStack.globalContains(ctx.IDFR().getText())) {
+        if (!scopeStack.globalContains(funcId)) {
             throw new TypeException().undefinedFuncError();
         }
-        return super.visitFuncCall(ctx);
+        return scopeStack.get(funcId);
     }
 
     @Override
@@ -124,7 +128,10 @@ public class Task1Checker extends SimpleLangBaseVisitor<SLType> {
             throw new TypeException().undefinedVarError();
         }
 
-        return super.visitAssignment(ctx);
+        // Evaluate the expression to the right
+        SLType rightExp = visitChildren(ctx.exp());
+
+        return SLType.UNIT;
     }
 
     @Override
@@ -135,7 +142,8 @@ public class Task1Checker extends SimpleLangBaseVisitor<SLType> {
             throw new TypeException().unitVarError();
         }
 
-        return super.visitType(ctx);
+        // This should always be a unit
+        return SLType.UNIT;
     }
 
     private void addFunction(SLType funcType, String funcId) {
