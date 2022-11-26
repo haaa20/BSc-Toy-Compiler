@@ -1,5 +1,6 @@
 import SimpleLang.*;
 import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.tree.TerminalNode;
 
 import java.util.HashMap;
 
@@ -20,6 +21,18 @@ public class Task1Checker extends SimpleLangBaseVisitor<SLType> {
 
     public Task1Checker() {
         this.scopeStack = new ScopeStack<>();
+    }
+
+    @Override
+    public SLType visitIdentifier(SimpleLangParser.IdentifierContext ctx) {
+        // The variable name must exist at a scope layer higher than global...
+        // as only functions are scoped globally
+        String varName = ctx.getText();
+
+        if (!scopeStack.slice(1).containsKey(varName)) {
+            throw new TypeException().undefinedVarError();
+        }
+        return scopeStack.get(varName);
     }
 
     @Override
@@ -45,6 +58,25 @@ public class Task1Checker extends SimpleLangBaseVisitor<SLType> {
     }
 
     @Override
+    public SLType visitDec(SimpleLangParser.DecContext ctx) {
+        // As we are entering a function, push a new layer of scope
+        scopeStack.pushScope();
+        super.visitDec(ctx);
+        // Once we have finished traversing the function sub-tree, pop off the scoped variables
+        scopeStack.popScope();
+        return SLType.UNIT;
+    }
+
+    @Override
+    public SLType visitVardec(SimpleLangParser.VardecContext ctx) {
+        // We should have just entered a function, so we will be fresh on a new layer of scope
+        for (int i = 0; i < ctx.IDFR().size(); i++) {
+            scopeStack.put(ctx.IDFR(i).getText(), Evaluate.typeOf(ctx.type(i)));
+        }
+        return super.visitVardec(ctx);
+    }
+
+    @Override
     public SLType visitFuncCall(SimpleLangParser.FuncCallContext ctx) {
         // Checking for unknown function names
         if (!scopeStack.globalContains(ctx.IDFR().getText())) {
@@ -55,7 +87,7 @@ public class Task1Checker extends SimpleLangBaseVisitor<SLType> {
 
     @Override
     public SLType visitBody(SimpleLangParser.BodyContext ctx) {
-        HashMap<String, SLType> bodyScope = new HashMap<>();
+        scopeStack.pushScope();
 
         // The sequence (type IDFR ':=' exp ';') will always repeat n number of times, so we can iterate through
         // any one of them and access all the others
@@ -74,13 +106,12 @@ public class Task1Checker extends SimpleLangBaseVisitor<SLType> {
             }
 
             // Adding the var to the scope
-            bodyScope.put(varName, varType);
+            scopeStack.put(varName, varType);
         }
 
-        scopeStack.pushScope(bodyScope);
-        SLType visit = super.visitBody(ctx);
+        super.visitBody(ctx);
         scopeStack.popScope();
-        return visit;
+        return SLType.UNIT;
     }
 
     @Override
