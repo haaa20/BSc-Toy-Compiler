@@ -1,5 +1,3 @@
-import SimpleLang.SLType;
-
 import java.util.*;
 
 public class ScopeStack<T> {
@@ -15,6 +13,26 @@ public class ScopeStack<T> {
 
     public Collection<String> getGlobal() {
         return global;
+    }
+
+    // An overload of slice, with just a lower limit
+    public HashMap<String,T> slice(int lower) {
+        return slice(lower, scope.size());
+    }
+
+    // I'm copying Python here, so the lower limit is inclusive, while the upper is not
+    public HashMap<String,T> slice(int lower, int upper) {
+        HashSet<String> idsInSlice = new HashSet<>();
+        HashMap<String,T> slice = new HashMap<>();
+
+        for (int i = lower; i < upper; i++) {
+            idsInSlice.addAll(scope.get(i));
+        }
+        for (String s: idsInSlice) {
+            slice.put(s, id.get(s));
+        }
+
+        return slice;
     }
 
     public ScopeStack() {
