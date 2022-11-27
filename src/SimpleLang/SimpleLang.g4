@@ -56,7 +56,7 @@ BOOLOP
 INTTYPE: 'int';
 BOOLTYPE: 'bool';
 UNITTYPE: 'unit';
-IDFR: [a-z]+([a-z]|[A-Z]|'_')*;
+IDFR: [a-z]+([a-z]|[A-Z]|[0-9]|'_')*;
 INTLIT: '0'|[1-9][0-9]*;
 BOOLLIT: 'true'|'false';
 WS     : [ \n\r\t]+ -> skip ;

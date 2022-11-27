@@ -15,24 +15,31 @@ public class Task1Checker extends SimpleLangBaseVisitor<SLType> {
                 default -> null;
             };
         }
+
+        private static boolean symbolIsIn(String sy, String symbols) {
+            for (String s : symbols.split("\s")) {
+                if (s.equals(sy)) {return true;}
+            }
+            return false;
+        }
+
+        static boolean isCompOp(String op) {
+            return symbolIsIn(op, "== < > <= >=");
+        }
+
+        static boolean isIntOp(String op) {
+            return symbolIsIn(op, "+ - * / ^");
+        }
+
+        static boolean isBoolOp(String op) {
+            return symbolIsIn(op, "& |");
+        }
     }
 
     ScopeStack<SLType> scopeStack;
 
     public Task1Checker() {
         this.scopeStack = new ScopeStack<>();
-    }
-
-    @Override
-    public SLType visitIdentifier(SimpleLangParser.IdentifierContext ctx) {
-        // The variable name must exist at a scope layer higher than global...
-        // as only functions are scoped globally
-        String varName = ctx.getText();
-
-        if (!scopeStack.slice(1).containsKey(varName)) {
-            throw new TypeException().undefinedVarError();
-        }
-        return scopeStack.get(varName);
     }
 
     @Override
@@ -89,6 +96,45 @@ public class Task1Checker extends SimpleLangBaseVisitor<SLType> {
         return scopeStack.get(funcId);
     }
 
+
+    // TODO this
+    @Override
+    public SLType visitOperation(SimpleLangParser.OperationContext ctx) {
+        // This one's structure is slightly unintuitive but bare with us
+        String symbol = ctx.binop().getText();
+        SLType expected = SLType.INT;
+        SLType operandA, operandB;
+        operandA = visit(ctx.exp(0));
+        operandB = visit(ctx.exp(1));
+
+        // We should be expecting two integers, unless we are doing a boolean operation
+        if (Evaluate.isCompOp(symbol)) {
+            if (operandA != expected || operandB != expected) {
+                System.out.println(ctx.getText());
+                System.out.println(operandA);
+                System.out.println(operandB);
+                throw new TypeException().comparisonError();
+            }
+
+            return SLType.BOOL;
+        }
+        else if (Evaluate.isIntOp(symbol)) {
+            if (operandA != expected || operandB != expected) {
+                                throw new TypeException().arithmeticError();
+            }
+
+            return SLType.INT;
+        }
+        else {
+            expected = SLType.BOOL;
+            if (operandA != expected || operandB != expected) {
+                throw new TypeException().logicalError();
+            }
+
+            return SLType.BOOL;
+        }
+    }
+
     @Override
     public SLType visitBody(SimpleLangParser.BodyContext ctx) {
         scopeStack.pushScope();
@@ -116,6 +162,28 @@ public class Task1Checker extends SimpleLangBaseVisitor<SLType> {
         super.visitBody(ctx);
         scopeStack.popScope();
         return SLType.UNIT;
+    }
+
+    @Override
+    public SLType visitIdentifier(SimpleLangParser.IdentifierContext ctx) {
+        // The variable name must exist at a scope layer higher than global...
+        // as only functions are scoped globally
+        String varName = ctx.getText();
+
+        if (!scopeStack.slice(1).containsKey(varName)) {
+            throw new TypeException().undefinedVarError();
+        }
+        return scopeStack.get(varName);
+    }
+
+    @Override
+    public SLType visitAnInt(SimpleLangParser.AnIntContext ctx) {
+        return SLType.INT;
+    }
+
+    @Override
+    public SLType visitABool(SimpleLangParser.ABoolContext ctx) {
+        return SLType.BOOL;
     }
 
     @Override
