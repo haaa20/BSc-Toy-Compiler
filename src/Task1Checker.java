@@ -85,6 +85,8 @@ public class Task1Checker extends SimpleLangBaseVisitor<SLType> {
         return SLType.UNIT;
     }
 
+
+
     @Override
     public SLType visitFuncCall(SimpleLangParser.FuncCallContext ctx) {
         String funcId = ctx.IDFR().getText();
@@ -110,9 +112,6 @@ public class Task1Checker extends SimpleLangBaseVisitor<SLType> {
         // We should be expecting two integers, unless we are doing a boolean operation
         if (Evaluate.isCompOp(symbol)) {
             if (operandA != expected || operandB != expected) {
-                System.out.println(ctx.getText());
-                System.out.println(operandA);
-                System.out.println(operandB);
                 throw new TypeException().comparisonError();
             }
 
@@ -120,7 +119,7 @@ public class Task1Checker extends SimpleLangBaseVisitor<SLType> {
         }
         else if (Evaluate.isIntOp(symbol)) {
             if (operandA != expected || operandB != expected) {
-                                throw new TypeException().arithmeticError();
+                throw new TypeException().arithmeticError();
             }
 
             return SLType.INT;
@@ -133,6 +132,26 @@ public class Task1Checker extends SimpleLangBaseVisitor<SLType> {
 
             return SLType.BOOL;
         }
+    }
+
+    @Override
+    public SLType visitConditional(SimpleLangParser.ConditionalContext ctx) {
+        // Check that the condition itself evaluates to a boolean
+        if (!visit(ctx.exp()).equals(SLType.BOOL)) {
+            throw new TypeException().conditionError();
+        }
+
+        // Check that the first and second codeBlocks (the if and else respectively) return the same
+        // type
+        // If they do, this is the type we want to return, otherwise throw an error
+        SLType expected = visit(ctx.block(0));
+        System.out.println(ctx.block(0).getText());
+
+        if (!expected.equals(visit(ctx.block(1)))) {
+            throw new TypeException().branchMismatchError();
+        }
+
+        return expected;
     }
 
     @Override
@@ -162,6 +181,11 @@ public class Task1Checker extends SimpleLangBaseVisitor<SLType> {
         super.visitBody(ctx);
         scopeStack.popScope();
         return SLType.UNIT;
+    }
+
+    @Override
+    public SLType visitBlock(SimpleLangParser.BlockContext ctx) {
+        return visit(ctx.ene());
     }
 
     @Override
