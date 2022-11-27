@@ -68,18 +68,6 @@ public interface SimpleLangListener extends ParseTreeListener {
 	 */
 	void exitEne(SimpleLangParser.EneContext ctx);
 	/**
-	 * Enter a parse tree produced by the {@code Identifier}
-	 * labeled alternative in {@link SimpleLangParser#exp}.
-	 * @param ctx the parse tree
-	 */
-	void enterIdentifier(SimpleLangParser.IdentifierContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code Identifier}
-	 * labeled alternative in {@link SimpleLangParser#exp}.
-	 * @param ctx the parse tree
-	 */
-	void exitIdentifier(SimpleLangParser.IdentifierContext ctx);
-	/**
 	 * Enter a parse tree produced by the {@code AnInt}
 	 * labeled alternative in {@link SimpleLangParser#exp}.
 	 * @param ctx the parse tree
@@ -235,6 +223,18 @@ public interface SimpleLangListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitSkip(SimpleLangParser.SkipContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code Identifier}
+	 * labeled alternative in {@link SimpleLangParser#exp}.
+	 * @param ctx the parse tree
+	 */
+	void enterIdentifier(SimpleLangParser.IdentifierContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code Identifier}
+	 * labeled alternative in {@link SimpleLangParser#exp}.
+	 * @param ctx the parse tree
+	 */
+	void exitIdentifier(SimpleLangParser.IdentifierContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link SimpleLangParser#args}.
 	 * @param ctx the parse tree

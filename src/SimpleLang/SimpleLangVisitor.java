@@ -47,13 +47,6 @@ public interface SimpleLangVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitEne(SimpleLangParser.EneContext ctx);
 	/**
-	 * Visit a parse tree produced by the {@code Identifier}
-	 * labeled alternative in {@link SimpleLangParser#exp}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitIdentifier(SimpleLangParser.IdentifierContext ctx);
-	/**
 	 * Visit a parse tree produced by the {@code AnInt}
 	 * labeled alternative in {@link SimpleLangParser#exp}.
 	 * @param ctx the parse tree
@@ -144,6 +137,13 @@ public interface SimpleLangVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitSkip(SimpleLangParser.SkipContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code Identifier}
+	 * labeled alternative in {@link SimpleLangParser#exp}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitIdentifier(SimpleLangParser.IdentifierContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link SimpleLangParser#args}.
 	 * @param ctx the parse tree

@@ -77,6 +77,7 @@ public class TypeException extends RuntimeException
         return this;
     }
 
+    // DONE
     // A method to produce an exception for undefined function name
     public TypeException undefinedFuncError()
     {
@@ -84,6 +85,7 @@ public class TypeException extends RuntimeException
         return this;
     }
 
+    // DONE
     // A method to produce an exception for undefined parameter or local variable name
     public TypeException undefinedVarError()
     {
@@ -91,6 +93,7 @@ public class TypeException extends RuntimeException
         return this;
     }
 
+    // DONE
     // A method to produce an exception related to mis-typed comparisons of integer values
     public TypeException comparisonError()
     {
@@ -98,6 +101,7 @@ public class TypeException extends RuntimeException
         return this;
     }
 
+    // DONE
     // A method to produce an exception related to mis-typed arithmetic expressions
     public TypeException arithmeticError()
     {
@@ -105,6 +109,7 @@ public class TypeException extends RuntimeException
         return this;
     }
 
+    // DONE
     // A method to produce an exception related to mis-typed Boolean expressions
     public TypeException logicalError()
     {
@@ -112,6 +117,7 @@ public class TypeException extends RuntimeException
         return this;
     }
 
+    // DONE
     // A method to produce an exception for 'if' statements, in which
     // the 'then' branch and the 'else' branch have different types.
     public TypeException branchMismatchError()
@@ -120,6 +126,7 @@ public class TypeException extends RuntimeException
         return this;
     }
 
+    // DONE
     // A method to produce an exception for if/loop conditions which are not of type bool.
     public TypeException conditionError()
     {

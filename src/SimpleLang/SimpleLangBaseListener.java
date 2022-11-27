@@ -89,18 +89,6 @@ public class SimpleLangBaseListener implements SimpleLangListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterIdentifier(SimpleLangParser.IdentifierContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitIdentifier(SimpleLangParser.IdentifierContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterAnInt(SimpleLangParser.AnIntContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -252,6 +240,18 @@ public class SimpleLangBaseListener implements SimpleLangListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitSkip(SimpleLangParser.SkipContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterIdentifier(SimpleLangParser.IdentifierContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitIdentifier(SimpleLangParser.IdentifierContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

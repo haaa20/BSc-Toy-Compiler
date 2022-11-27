@@ -99,7 +99,7 @@ public class Task1Checker extends SimpleLangBaseVisitor<SLType> {
     }
 
 
-    // TODO this
+
     @Override
     public SLType visitOperation(SimpleLangParser.OperationContext ctx) {
         // This one's structure is slightly unintuitive but bare with us
@@ -145,13 +145,30 @@ public class Task1Checker extends SimpleLangBaseVisitor<SLType> {
         // type
         // If they do, this is the type we want to return, otherwise throw an error
         SLType expected = visit(ctx.block(0));
-        System.out.println(ctx.block(0).getText());
 
         if (!expected.equals(visit(ctx.block(1)))) {
             throw new TypeException().branchMismatchError();
         }
 
         return expected;
+    }
+
+    @Override
+    public SLType visitWhileLoop(SimpleLangParser.WhileLoopContext ctx) {
+        if (!visit(ctx.exp()).equals(SLType.BOOL)) {
+            throw new TypeException().conditionError();
+        }
+
+        return super.visitWhileLoop(ctx);
+    }
+
+    @Override
+    public SLType visitUntilLoop(SimpleLangParser.UntilLoopContext ctx) {
+        if (!visit(ctx.exp()).equals(SLType.BOOL)) {
+            throw new TypeException().conditionError();
+        }
+
+        return super.visitUntilLoop(ctx);
     }
 
     @Override
@@ -195,6 +212,7 @@ public class Task1Checker extends SimpleLangBaseVisitor<SLType> {
         String varName = ctx.getText();
 
         if (!scopeStack.slice(1).containsKey(varName)) {
+            System.out.println(ctx.getText());
             throw new TypeException().undefinedVarError();
         }
         return scopeStack.get(varName);
@@ -207,6 +225,7 @@ public class Task1Checker extends SimpleLangBaseVisitor<SLType> {
 
     @Override
     public SLType visitABool(SimpleLangParser.ABoolContext ctx) {
+        System.out.println("Beep");
         return SLType.BOOL;
     }
 

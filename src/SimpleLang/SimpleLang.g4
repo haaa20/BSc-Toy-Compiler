@@ -13,8 +13,7 @@ block: '{' ene '}';
 ene: exp (';' exp)*;
 
 exp
-    : IDFR      #Identifier
-    | INTLIT    #AnInt
+    : INTLIT    #AnInt
     | BOOLLIT   #ABool
     | IDFR ':=' exp #Assignment
     | '(' exp binop exp ')' #Operation
@@ -27,6 +26,7 @@ exp
     | 'newline' #NewLine // not sure about these chief...
     | 'space'   #Space
     | 'skip'    #Skip
+    | IDFR      #Identifier
 ;
 
 args: (exp (',' exp)*)?;
@@ -57,6 +57,6 @@ INTTYPE: 'int';
 BOOLTYPE: 'bool';
 UNITTYPE: 'unit';
 BOOLLIT: 'true'|'false';
-IDFR: [a-z]+([a-z]|[A-Z]|[0-9]|'_')*;
+IDFR: [a-z]([a-z]|[A-Z]|[0-9]|'_')*;
 INTLIT: '0'|[1-9][0-9]*;
 WS     : [ \n\r\t]+ -> skip ;
