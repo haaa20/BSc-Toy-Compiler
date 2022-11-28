@@ -47,11 +47,11 @@ INTOP
     | '-'
     | '*'
     | '/'
-    | '^'
 ;
 BOOLOP
     : '&'
     | '|'
+    | '^'
 ;
 INTTYPE: 'int';
 BOOLTYPE: 'bool';
