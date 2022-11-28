@@ -159,6 +159,8 @@ public class Task1Checker extends SimpleLangBaseVisitor<SLType> {
             throw new TypeException().conditionError();
         }
 
+        visitLoopBlock(ctx.block());
+
         return super.visitWhileLoop(ctx);
     }
 
@@ -167,6 +169,8 @@ public class Task1Checker extends SimpleLangBaseVisitor<SLType> {
         if (!visit(ctx.exp()).equals(SLType.BOOL)) {
             throw new TypeException().conditionError();
         }
+
+        visitLoopBlock(ctx.block());
 
         return super.visitUntilLoop(ctx);
     }
@@ -203,6 +207,14 @@ public class Task1Checker extends SimpleLangBaseVisitor<SLType> {
     @Override
     public SLType visitBlock(SimpleLangParser.BlockContext ctx) {
         return visit(ctx.ene());
+    }
+
+    public SLType visitLoopBlock(SimpleLangParser.BlockContext ctx) {
+        int lastExpIdx = ctx.ene().exp().size() - 1;
+        if (visit(ctx.ene().exp(lastExpIdx)) != SLType.UNIT) {
+            throw new TypeException().loopBodyError();
+        }
+        return visitBlock(ctx);
     }
 
     @Override

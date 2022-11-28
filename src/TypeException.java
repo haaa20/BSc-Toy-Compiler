@@ -134,6 +134,8 @@ public class TypeException extends RuntimeException
         return this;
     }
 
+    // DONE
+    // ...I'm assuming this means it has to be a unit...
     // A method to produce an exception related to expressions in loop body.
     public TypeException loopBodyError()
     {
