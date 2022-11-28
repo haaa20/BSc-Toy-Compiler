@@ -2,12 +2,13 @@ import SimpleLang.*;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
+import java.util.Collection;
 import java.util.HashMap;
 
 public class Task1Checker extends SimpleLangBaseVisitor<SLType> {
     private static class Evaluate {
         // A simple function to evaluate a TYPE node
-        static SLType typeOf(ParseTree ctx) {
+        static SLType typeOf(SimpleLangParser.TypeContext ctx) {
             return switch (ctx.getText()) {
                 case "int" -> SLType.INT;
                 case "bool" -> SLType.BOOL;
@@ -23,23 +24,36 @@ public class Task1Checker extends SimpleLangBaseVisitor<SLType> {
             return false;
         }
 
+        static SLType[] generateSignature(SimpleLangParser.VardecContext ctx) {
+            int expectedNo = ctx.IDFR().size();
+            SLType[] expectedTypes = new SLType[expectedNo];
+
+            for (int i = 0; i < expectedNo; i++) {
+                expectedTypes[i] = Evaluate.typeOf(ctx.type(i));
+            }
+
+            return expectedTypes;
+        }
+
         static boolean isCompOp(String op) {
             return symbolIsIn(op, "== < > <= >=");
         }
 
         static boolean isIntOp(String op) {
-            return symbolIsIn(op, "+ - * / ^");
+            return symbolIsIn(op, "+ - * /");
         }
 
         static boolean isBoolOp(String op) {
-            return symbolIsIn(op, "& |");
+            return symbolIsIn(op, "& | ^");
         }
     }
 
     ScopeStack<SLType> scopeStack;
+    HashMap<String, SLType[]> signature;
 
     public Task1Checker() {
         this.scopeStack = new ScopeStack<>();
+        this.signature = new HashMap<>();
     }
 
     @Override
@@ -47,11 +61,14 @@ public class Task1Checker extends SimpleLangBaseVisitor<SLType> {
         // Iterate through every function declaration, and add them to the scope
         // We want to do this FIRST as the order in which functions are declared should not matter
         // to any of the blocks of code
+        SLType funcType;
+        String funcName;
         for (SimpleLangParser.DecContext dec : ctx.dec()) {
-            addFunction(
-                    Evaluate.typeOf(dec.type()),
-                    dec.IDFR().getText()
-            );
+            funcType = Evaluate.typeOf(dec.type());
+            funcName = dec.IDFR().getText();
+            addFunction(funcType, funcName);
+
+            signature.put(funcName, Evaluate.generateSignature(dec.vardec()));
         }
 
         if (!scopeStack.getGlobal().contains("main")) {
@@ -67,6 +84,8 @@ public class Task1Checker extends SimpleLangBaseVisitor<SLType> {
 
     @Override
     public SLType visitDec(SimpleLangParser.DecContext ctx) {
+        // IF YOU'RE WONDERING WHY THERE'S NO SCOPE STACK HASHING
+        // ...remember we already did that in visitProg()
         // As we are entering a function, push a new layer of scope
         scopeStack.pushScope();
         visitChildren(ctx);
@@ -85,8 +104,6 @@ public class Task1Checker extends SimpleLangBaseVisitor<SLType> {
         return SLType.UNIT;
     }
 
-
-
     @Override
     public SLType visitFuncCall(SimpleLangParser.FuncCallContext ctx) {
         String funcId = ctx.IDFR().getText();
@@ -94,6 +111,18 @@ public class Task1Checker extends SimpleLangBaseVisitor<SLType> {
         // Checking for unknown function names
         if (!scopeStack.globalContains(funcId)) {
             throw new TypeException().undefinedFuncError();
+        }
+
+        // Checking there are the correct number/types of parameters
+        SLType[] expected = signature.get(funcId);
+        SimpleLangParser.ArgsContext given = ctx.args();
+        if (given.exp().size() != expected.length) {
+            throw new TypeException().argumentNumberError();
+        }
+        for (int i = 0; i < expected.length; i++) {
+            if (visit(given.exp(i)) != expected[i]) {
+                throw new TypeException().argumentError();
+            }
         }
         return scopeStack.get(funcId);
     }
@@ -177,6 +206,7 @@ public class Task1Checker extends SimpleLangBaseVisitor<SLType> {
 
     @Override
     public SLType visitBody(SimpleLangParser.BodyContext ctx) {
+        // Push a new layer to the scope stack
         scopeStack.pushScope();
 
         // The sequence (type IDFR ':=' exp ';') will always repeat n number of times, so we can iterate through
@@ -195,11 +225,16 @@ public class Task1Checker extends SimpleLangBaseVisitor<SLType> {
                 }
             }
 
+            // Checking the value our var is being assigned to is the right type
+            if (varType != visit(ctx.exp(i))) {
+                throw new TypeException().assignmentError();
+            }
+
             // Adding the var to the scope
             scopeStack.put(varName, varType);
         }
 
-        super.visitBody(ctx);
+        visit(ctx.ene());
         scopeStack.popScope();
         return SLType.UNIT;
     }
@@ -252,7 +287,12 @@ public class Task1Checker extends SimpleLangBaseVisitor<SLType> {
         }
 
         // Evaluate the expression to the right
-        SLType rightExp = visitChildren(ctx.exp());
+        SLType rightExp = visit(ctx.exp());
+
+        // Checking the value our var is being assigned to is the right type
+        if (scopeStack.get(varName) != rightExp) {
+            throw new TypeException().assignmentError();
+        }
 
         return SLType.UNIT;
     }
