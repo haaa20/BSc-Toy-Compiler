@@ -309,6 +309,21 @@ public class Task1Checker extends SimpleLangBaseVisitor<SLType> {
     }
 
     @Override
+    public SLType visitPrint(SimpleLangParser.PrintContext ctx) {
+        SLType exp = visit(ctx.exp());
+        if (exp != SLType.INT) {
+            if (
+                    !ctx.exp().getText().equals("print") ||
+                    !ctx.exp().getText().equals("newline")
+            ) {
+                throw new TypeException().printError();
+            }
+        }
+
+        return SLType.UNIT;
+    }
+
+    @Override
     public SLType visitType(SimpleLangParser.TypeContext ctx) {
         // Check for variables of type unit, which is not allowed
         if (!(ctx.getParent() instanceof SimpleLangParser.DecContext)
