@@ -86,11 +86,17 @@ public class Task1Checker extends SimpleLangBaseVisitor<SLType> {
     public SLType visitDec(SimpleLangParser.DecContext ctx) {
         // IF YOU'RE WONDERING WHY THERE'S NO SCOPE STACK HASHING
         // ...remember we already did that in visitProg()
+        String funcName = ctx.IDFR().getText();
+
         // As we are entering a function, push a new layer of scope
+        // Then visit each of the children
         scopeStack.pushScope();
-        visitChildren(ctx);
-        // Once we have finished traversing the function sub-tree, pop off the scoped variables
+        visitVardec(ctx.vardec());
+        if (visitBody(ctx.body()) != scopeStack.get(funcName)) {
+            throw new TypeException().functionBodyError();
+        }
         scopeStack.popScope();
+
         return SLType.UNIT;
     }
 
@@ -102,6 +108,46 @@ public class Task1Checker extends SimpleLangBaseVisitor<SLType> {
         }
 
         return SLType.UNIT;
+    }
+
+    @Override
+    public SLType visitBody(SimpleLangParser.BodyContext ctx) {
+        // The sequence (type IDFR ':=' exp ';') will always repeat n number of times, so we can iterate through
+        // any one of them and access all the others
+        for (int i = 0; i < ctx.IDFR().size(); i++) {
+            SLType varType = Evaluate.typeOf(ctx.type(i));
+            String varName = ctx.IDFR(i).getText();
+            // Checking if there is collision between a var name and the functions, or the other vars
+            // currently in scope
+            if (scopeStack.containsKey(varName)) {
+                if (scopeStack.globalContains(varName)) {
+                    throw new TypeException().clashedVarError();
+                }
+                else {
+                    throw new TypeException().duplicatedVarError();
+                }
+            }
+
+            // Checking the value our var is being assigned to is the right type
+            if (varType != visit(ctx.exp(i))) {
+                throw new TypeException().assignmentError();
+            }
+
+            // Adding the var to the scope
+            scopeStack.put(varName, varType);
+        }
+
+        return visitEne(ctx.ene());
+    }
+
+    @Override
+    public SLType visitEne(SimpleLangParser.EneContext ctx) {
+        // visit every exp and return the type of the final one
+        int finalExpIdx = ctx.exp().size() - 1;
+        for (int i = 0; i < finalExpIdx; i++) {
+            visit(ctx.exp(i));
+        }
+        return visit(ctx.exp(finalExpIdx));
     }
 
     @Override
@@ -202,41 +248,6 @@ public class Task1Checker extends SimpleLangBaseVisitor<SLType> {
         visitLoopBlock(ctx.block());
 
         return super.visitUntilLoop(ctx);
-    }
-
-    @Override
-    public SLType visitBody(SimpleLangParser.BodyContext ctx) {
-        // Push a new layer to the scope stack
-        scopeStack.pushScope();
-
-        // The sequence (type IDFR ':=' exp ';') will always repeat n number of times, so we can iterate through
-        // any one of them and access all the others
-        for (int i = 0; i < ctx.IDFR().size(); i++) {
-            SLType varType = Evaluate.typeOf(ctx.type(i));
-            String varName = ctx.IDFR(i).getText();
-            // Checking if there is collision between a var name and the functions, or the other vars
-            // currently in scope
-            if (scopeStack.containsKey(varName)) {
-                if (scopeStack.globalContains(varName)) {
-                    throw new TypeException().clashedVarError();
-                }
-                else {
-                    throw new TypeException().duplicatedVarError();
-                }
-            }
-
-            // Checking the value our var is being assigned to is the right type
-            if (varType != visit(ctx.exp(i))) {
-                throw new TypeException().assignmentError();
-            }
-
-            // Adding the var to the scope
-            scopeStack.put(varName, varType);
-        }
-
-        visit(ctx.ene());
-        scopeStack.popScope();
-        return SLType.UNIT;
     }
 
     @Override
