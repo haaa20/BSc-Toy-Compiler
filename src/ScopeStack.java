@@ -4,10 +4,12 @@ public class ScopeStack<T> {
     // A class to keep track of which idfrs are currently in scope
     // I'll do this with a map of strings to types
     // plus a stack of lists of strings at different layers
-    private HashMap<String, T> id;
-    private Stack<Collection<String>> scope;
-    private Collection<String> global; // This will ALWAYS be the base of the stack, and should be the only
+    private final HashMap<String, T> id;
+    private final Stack<Collection<String>> scope;
+    private final Collection<String> global;
+    // The above will ALWAYS be the base of the stack, and should be the only
     // layer on the stack other than the top which we can access individually
+    // outside of slicing
 
     // TO KEEP THINGS CLEAN, I AM NOT GOING TO THROW ANY EXCEPTIONS FROM THIS CLASS
 
@@ -43,20 +45,27 @@ public class ScopeStack<T> {
         scope.push(global);
     }
 
-    // Pushes a new scope stack layer with some new values
+    /**
+     * Pushes a new scope stack layer with some new values
+     * @param newIds HashMap
+     */
     public void pushScope(HashMap<String, T> newIds) {
         pushScope();
         putAll(newIds);
     }
 
-    // Pushes a new, empty collection of Strings to the top of the scope stack
-    // New ID's will be added to this
+    /**
+     * Pushes a new, empty, layer to the scope stack
+     */
     public void pushScope() {
         Set<String> scopeId = new HashSet<>();
         scope.push(scopeId);
     }
 
-    // Pops off the top of the stack, removing said ids from the map
+    /**
+     * Pops off the top of the stack, removing said ids from the map
+     * @return Collection of the removed ids
+     */
     public Collection<String> popScope() {
         Collection<String> popped = scope.pop();
         for (String s : popped) {
