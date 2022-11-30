@@ -43,5 +43,6 @@ public class Task1 {
         String[] inputArgs;
         simulator.visit(tree);
         inputArgs = reader.readLine().split("\s+|(,\s*)");
+        simulator.runMain(inputArgs);
     }
 }

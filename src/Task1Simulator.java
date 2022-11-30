@@ -2,8 +2,10 @@ import SimpleLang.SLObject;
 import SimpleLang.SLType;
 import SimpleLang.SimpleLangBaseVisitor;
 import SimpleLang.SimpleLangParser;
+import org.antlr.v4.runtime.tree.ParseTree;
 
 import java.util.HashMap;
+import java.util.Iterator;
 
 public class Task1Simulator extends SimpleLangBaseVisitor<SLObject> {
 
@@ -17,14 +19,28 @@ public class Task1Simulator extends SimpleLangBaseVisitor<SLObject> {
         }
 
         public SLObject run(SLObject[] args) {
-            // here each element in the args array should pam to the one in the parameter
-            HashMap<String, SLObject> vars = new HashMap<>();
+            // here each element in the args array should map to the one in the parameter
+            // Also, each function should push it a new layer to scopeStack,
+            // and pop it before returning
+            SimpleLangParser.ExpContext exp = null;
+            SLObject output;
+            scopeStack.pushScope();
 
-            for (int i = 0; i < body.IDFR().size(); i++) {
-                vars.put(body.IDFR(i).getText(), visit(body.exp(i)));
+            // map the value of each arg to the parameter name declared in the signature
+            // which, remember, we stored in an array
+            for (int i = 0; i < params.length; i++) {
+                scopeStack.put(params[i], args[i]);
             }
 
-            return null;
+            // Now we add the variables declared in the body itself to the hash map
+            for (int i = 0; i < body.IDFR().size(); i++) {
+                scopeStack.put(body.IDFR(i).getText(), visit(body.exp(i)));
+            }
+
+            // Finally, visit the body itself, before popping the scope
+            output = visitEne(body.ene());
+            scopeStack.popScope();
+            return output; // eww
         }
     }
 
@@ -39,9 +55,11 @@ public class Task1Simulator extends SimpleLangBaseVisitor<SLObject> {
     //    You don't get to be unkind
 
     HashMap<String, FuncWrapper> functions;
+    ScopeStack<SLObject> scopeStack;
 
     public Task1Simulator() {
         this.functions = new HashMap<>();
+        this.scopeStack = new ScopeStack<>();
     }
 
     @Override
@@ -67,6 +85,20 @@ public class Task1Simulator extends SimpleLangBaseVisitor<SLObject> {
     }
 
     @Override
+    public SLObject visitEne(SimpleLangParser.EneContext ctx) {
+        // Iterate through each expression in the ene, returning
+        // the value that the last one evaluates to
+        Iterator<SimpleLangParser.ExpContext> lines = ctx.exp().iterator();
+        SimpleLangParser.ExpContext exp = lines.next();
+
+        while (lines.hasNext()) {
+            visit(exp);
+            exp = lines.next();
+        }
+        return super.visitEne(ctx);
+    }
+
+    @Override
     public SLObject visitAnInt(SimpleLangParser.AnIntContext ctx) {
         int value = Integer.parseInt(ctx.getText());
         return new SLObject(value);
@@ -74,7 +106,7 @@ public class Task1Simulator extends SimpleLangBaseVisitor<SLObject> {
 
     @Override
     public SLObject visitABool(SimpleLangParser.ABoolContext ctx) {
-        if (ctx.getText() == "true") {
+        if (ctx.getText().equals("true")) {
             return new SLObject(true);
         }
         return new SLObject(false);
@@ -82,8 +114,53 @@ public class Task1Simulator extends SimpleLangBaseVisitor<SLObject> {
 
     @Override
     public SLObject visitOperation(SimpleLangParser.OperationContext ctx) {
-        // Yikes this one's gonna take some doin'
-        return super.visitOperation(ctx);
+        // Yikes this one's gonna take some doing'
+        Operator op = Operator.evaluate(ctx.binop().getText());
+        SLObject a = visit(ctx.exp(0)); // The two operands
+        SLObject b = visit(ctx.exp(1));
+        SLObject c; // The rightmost term ie answer
+
+        if (op == Operator.PLUS) {
+            c = new SLObject(a.getValue() + b.getValue());
+        }
+        else if (op == Operator.MINUS) {
+            c = new SLObject(a.getValue() - b.getValue());
+        }
+        else if (op == Operator.MULTI) {
+            c = new SLObject(a.getValue() * b.getValue());
+        }
+        else if (op == Operator.DIV) {
+            c = new SLObject(a.getValue() / b.getValue());
+        }
+        else if (op == Operator.AND) {
+            c = new SLObject(a.getBool() && b.getBool());
+        }
+        else if (op == Operator.OR) {
+            c = new SLObject(a.getBool() || b.getBool());
+        }
+        else if (op == Operator.XOR) {
+            c = new SLObject(a.getBool() ^ b.getBool());
+        }
+        else if (op == Operator.EQ) {
+            c = new SLObject(a.getValue() == b.getValue());
+        }
+        else if (op == Operator.LESS) {
+            c = new SLObject(a.getValue() < b.getValue());
+        }
+        else if (op == Operator.MORE) {
+            c = new SLObject(a.getValue() > b.getValue());
+        }
+        else if (op == Operator.LESSEQ) {
+            c = new SLObject(a.getValue() <= b.getValue());
+        }
+        else if (op == Operator.MOREEQ) {
+            c = new SLObject(a.getValue() >= b.getValue());
+        }
+        else {
+            c = new SLObject();
+        }
+
+        return c;
     }
 
     @Override
@@ -93,11 +170,17 @@ public class Task1Simulator extends SimpleLangBaseVisitor<SLObject> {
         return f.run(args);
     }
 
+    @Override
+    public SLObject visitIdentifier(SimpleLangParser.IdentifierContext ctx) {
+        return scopeStack.get(ctx.getText());
+    }
+
     public void runMain(String[] rawArgs) {
         FuncWrapper main;
         main = functions.get("main");
+        int output = main.run(evaluateArgs(rawArgs)).getValue();
 
-        // main.run(args);
+        System.out.println("\nNORMAL_TERMINATION\n" + output);
     }
 
     // For when we a passing the inputs as text (ie for the main function)
@@ -105,9 +188,19 @@ public class Task1Simulator extends SimpleLangBaseVisitor<SLObject> {
         SLObject[] args = new SLObject[rawArgs.length];
 
         for (int i = 0; i < args.length; i++) {
-
+            if (rawArgs[i].equals("true")) {
+                args[i] = new SLObject(true);
+            }
+            else if (rawArgs[i].equals("false")) {
+                args[i] = new SLObject(false);
+            }
+            else try {
+                args[i] = new SLObject(Integer.parseInt(rawArgs[i]));
+            }
+            catch (NumberFormatException e) {
+                args[i] = new SLObject();
+            }
         }
-
         return args;
     }
 
