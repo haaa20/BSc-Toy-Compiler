@@ -191,6 +191,35 @@ public class Task1Simulator extends SimpleLangBaseVisitor<SLObject> {
         }
     }
 
+    // TODO: find out if the while loop is meant to run at least once
+    //  and do the while and until loops
+
+    @Override
+    public SLObject visitWhileLoop(SimpleLangParser.WhileLoopContext ctx) {
+        SimpleLangParser.ExpContext condition = ctx.exp();
+        SimpleLangParser.BlockContext block = ctx.block();
+
+        while (visit(condition).getBool()) {
+            visitBlock(block);
+        }
+
+        return new SLObject();
+    }
+
+    @Override
+    public SLObject visitUntilLoop(SimpleLangParser.UntilLoopContext ctx) {
+        SimpleLangParser.ExpContext condition = ctx.exp();
+        SimpleLangParser.BlockContext block = ctx.block();
+
+        visitBlock(block);
+
+        while (!visit(condition).getBool()) {
+            visitBlock(block);
+        }
+
+        return new SLObject();
+    }
+
     @Override
     public SLObject visitPrint(SimpleLangParser.PrintContext ctx) {
         SLObject out = visit(ctx.exp());
