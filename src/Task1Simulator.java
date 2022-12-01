@@ -40,7 +40,7 @@ public class Task1Simulator extends SimpleLangBaseVisitor<SLObject> {
             // Finally, visit the body itself, before popping the scope
             output = visitEne(body.ene());
             scopeStack.popScope();
-            return output; // eww
+            return output;
         }
     }
 
@@ -56,10 +56,12 @@ public class Task1Simulator extends SimpleLangBaseVisitor<SLObject> {
 
     HashMap<String, FuncWrapper> functions;
     ScopeStack<SLObject> scopeStack;
+    String printOut;
 
     public Task1Simulator() {
         this.functions = new HashMap<>();
         this.scopeStack = new ScopeStack<>();
+        this.printOut = "";
     }
 
     @Override
@@ -95,7 +97,8 @@ public class Task1Simulator extends SimpleLangBaseVisitor<SLObject> {
             visit(exp);
             exp = lines.next();
         }
-        return super.visitEne(ctx);
+
+        return visit(exp);
     }
 
     @Override
@@ -110,6 +113,14 @@ public class Task1Simulator extends SimpleLangBaseVisitor<SLObject> {
             return new SLObject(true);
         }
         return new SLObject(false);
+    }
+
+    @Override
+    public SLObject visitAssignment(SimpleLangParser.AssignmentContext ctx) {
+        String varName = ctx.IDFR().getText();
+        SLObject exp = visit(ctx.exp());
+        scopeStack.put(varName, exp);
+        return new SLObject();
     }
 
     @Override
@@ -164,10 +175,59 @@ public class Task1Simulator extends SimpleLangBaseVisitor<SLObject> {
     }
 
     @Override
+    public SLObject visitBlock(SimpleLangParser.BlockContext ctx) {
+        return visitEne(ctx.ene());
+    }
+
+    @Override
+    public SLObject visitConditional(SimpleLangParser.ConditionalContext ctx) {
+        Boolean conditionMet = visit(ctx.exp()).getBool();
+
+        if (conditionMet) {
+            return visitBlock(ctx.block(0));
+        }
+        else {
+            return visitBlock(ctx.block(1));
+        }
+    }
+
+    @Override
+    public SLObject visitPrint(SimpleLangParser.PrintContext ctx) {
+        SLObject out = visit(ctx.exp());
+
+        if (out.getType() == SLType.INT) {
+            printOut = printOut.concat(out.toString());
+        }
+        else if (ctx.exp().getText().equals("space")) {
+            printOut = printOut.concat(" ");
+        }
+        else { // if == "newline"
+            printOut = printOut.concat("\n");
+        }
+
+        return new SLObject();
+    }
+
+    @Override
     public SLObject visitFuncCall(SimpleLangParser.FuncCallContext ctx) {
         SLObject[] args = evaluateArgs(ctx.args());
         FuncWrapper f = functions.get(ctx.IDFR().getText());
         return f.run(args);
+    }
+
+    @Override
+    public SLObject visitNewLine(SimpleLangParser.NewLineContext ctx) {
+        return new SLObject();
+    }
+
+    @Override
+    public SLObject visitSpace(SimpleLangParser.SpaceContext ctx) {
+        return new SLObject();
+    }
+
+    @Override
+    public SLObject visitSkip(SimpleLangParser.SkipContext ctx) {
+        return new SLObject();
     }
 
     @Override
@@ -180,6 +240,9 @@ public class Task1Simulator extends SimpleLangBaseVisitor<SLObject> {
         main = functions.get("main");
         int output = main.run(evaluateArgs(rawArgs)).getValue();
 
+        if (!printOut.isEmpty()) {
+            System.out.println(printOut);
+        }
         System.out.println("\nNORMAL_TERMINATION\n" + output);
     }
 

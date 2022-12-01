@@ -1,9 +1,11 @@
-unit doLoop (int i, int a) {
-while (i <= 100) do {
-  a := (a + i);
-  i := (i + 1) } }
-
-int main() {
-doLoop(0, 5);
-print space;
-1337 }
+int main(int a, int b) {
+    print a;
+    print newline;
+    print b;
+    if (a > b) then {
+        (a - b)
+    }
+    else {
+        (b - a)
+    }
+}

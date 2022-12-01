@@ -1,52 +1,8 @@
 import SimpleLang.*;
-import org.antlr.v4.runtime.tree.ParseTree;
-import org.antlr.v4.runtime.tree.TerminalNode;
 
-import java.util.Collection;
 import java.util.HashMap;
 
 public class Task1Checker extends SimpleLangBaseVisitor<SLType> {
-    private static class Evaluate {
-        // A simple function to evaluate a TYPE node
-        static SLType typeOf(SimpleLangParser.TypeContext ctx) {
-            return switch (ctx.getText()) {
-                case "int" -> SLType.INT;
-                case "bool" -> SLType.BOOL;
-                case "unit" -> SLType.UNIT;
-                default -> null;
-            };
-        }
-
-        private static boolean symbolIsIn(String sy, String symbols) {
-            for (String s : symbols.split("\s")) {
-                if (s.equals(sy)) {return true;}
-            }
-            return false;
-        }
-
-        static SLType[] generateSignature(SimpleLangParser.VardecContext ctx) {
-            int expectedNo = ctx.IDFR().size();
-            SLType[] expectedTypes = new SLType[expectedNo];
-
-            for (int i = 0; i < expectedNo; i++) {
-                expectedTypes[i] = Evaluate.typeOf(ctx.type(i));
-            }
-
-            return expectedTypes;
-        }
-
-        static boolean isCompOp(String op) {
-            return symbolIsIn(op, "== < > <= >=");
-        }
-
-        static boolean isIntOp(String op) {
-            return symbolIsIn(op, "+ - * /");
-        }
-
-        static boolean isBoolOp(String op) {
-            return symbolIsIn(op, "& | ^");
-        }
-    }
 
     ScopeStack<SLType> scopeStack;
     HashMap<String, SLType[]> signature;
@@ -283,7 +239,6 @@ public class Task1Checker extends SimpleLangBaseVisitor<SLType> {
 
     @Override
     public SLType visitABool(SimpleLangParser.ABoolContext ctx) {
-        System.out.println("Beep");
         return SLType.BOOL;
     }
 
@@ -297,7 +252,7 @@ public class Task1Checker extends SimpleLangBaseVisitor<SLType> {
             throw new TypeException().undefinedVarError();
         }
 
-        // Evaluate the expression to the right
+        // Task1Checker.Evaluate the expression to the right
         SLType rightExp = visit(ctx.exp());
 
         // Checking the value our var is being assigned to is the right type
@@ -313,9 +268,10 @@ public class Task1Checker extends SimpleLangBaseVisitor<SLType> {
         SLType exp = visit(ctx.exp());
         if (exp != SLType.INT) {
             if (
-                    !ctx.exp().getText().equals("print") ||
+                    !ctx.exp().getText().equals("space") &&
                     !ctx.exp().getText().equals("newline")
             ) {
+                System.err.println();
                 throw new TypeException().printError();
             }
         }
@@ -344,5 +300,49 @@ public class Task1Checker extends SimpleLangBaseVisitor<SLType> {
         // At this point it SHOULDN'T matter whether we do globalPut() or just put()
         // But I'm using globalPut() just to be safe for now
         scopeStack.globalPut(funcId, funcType);
+    }
+
+    static class Evaluate {
+        // A simple function to evaluate a TYPE node
+        static SLType typeOf(SimpleLangParser.TypeContext ctx) {
+            return switch (ctx.getText()) {
+                case "int" -> SLType.INT;
+                case "bool" -> SLType.BOOL;
+                case "unit" -> SLType.UNIT;
+                default -> null;
+            };
+        }
+
+        private static boolean symbolIsIn(String sy, String symbols) {
+            for (String s : symbols.split("\s")) {
+                if (s.equals(sy)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        static SLType[] generateSignature(SimpleLangParser.VardecContext ctx) {
+            int expectedNo = ctx.IDFR().size();
+            SLType[] expectedTypes = new SLType[expectedNo];
+
+            for (int i = 0; i < expectedNo; i++) {
+                expectedTypes[i] = Evaluate.typeOf(ctx.type(i));
+            }
+
+            return expectedTypes;
+        }
+
+        static boolean isCompOp(String op) {
+            return symbolIsIn(op, "== < > <= >=");
+        }
+
+        static boolean isIntOp(String op) {
+            return symbolIsIn(op, "+ - * /");
+        }
+
+        static boolean isBoolOp(String op) {
+            return symbolIsIn(op, "& | ^");
+        }
     }
 }

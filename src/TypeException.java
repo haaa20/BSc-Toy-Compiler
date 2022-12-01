@@ -9,7 +9,6 @@
 
 public class TypeException extends RuntimeException
 {
-
     private String msg;
 
     public TypeException()
@@ -143,6 +142,7 @@ public class TypeException extends RuntimeException
         return this;
     }
 
+    // DONE
     // A method to produce an exception for errors regarding function's return type.
     public TypeException functionBodyError()
     {
@@ -150,6 +150,7 @@ public class TypeException extends RuntimeException
         return this;
     }
 
+    // DONE
     // A method to produce an exception related to assignment.
     public TypeException assignmentError()
     {
@@ -157,6 +158,7 @@ public class TypeException extends RuntimeException
         return this;
     }
 
+    // DONE
     // A method to produce an exception related to argument list mismatches.
     public TypeException argumentNumberError()
     {
@@ -164,6 +166,7 @@ public class TypeException extends RuntimeException
         return this;
     }
 
+    // DONE
     // A method to produce an exception related to argument type mismatches.
     public TypeException argumentError()
     {
